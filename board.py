@@ -128,15 +128,21 @@ class Board:
         return (x >= 0 and y >= 0 and x < Board.WIDTH and y < Board.HEIGHT)
 
     def to_string(self):
-        string =  "    A  B  C  D  E  F  G  H\n"
-        string += "    -----------------------\n"
+        string =  "     A  B  C  D  E  F  G  H\n"
+        string += "     -----------------------\n"
         for y in range(Board.HEIGHT):
             string += str(8 - y) + " | "
             for x in range(Board.WIDTH):
                 piece = self.chesspieces[x][y]
+                #if (x == 0 and piece == 0):
+                #    string +=" "
                 if (piece != 0):
                     string += piece.to_string()
                 else:
-                    string += ".. "
+                    if ( (x+y)%2 == 0):
+                        string += " \u25A0 "
+                    else:
+                        string += " \u25A1 "
+
             string += "\n"
         return string + "\n"

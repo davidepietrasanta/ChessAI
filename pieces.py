@@ -117,6 +117,7 @@ class Piece():
     def to_string(self):
         return self.color + self.piece_type + " "
 
+
 class Rook(Piece):
 
     PIECE_TYPE = "R"
@@ -130,6 +131,12 @@ class Rook(Piece):
 
     def clone(self):
         return Rook(self.x, self.y, self.color)
+
+    def to_string(self):
+        if self.color == "B":
+            return " \u2656 "
+        else:
+            return " \u265C "
 
 
 class Knight(Piece):
@@ -157,6 +164,12 @@ class Knight(Piece):
     def clone(self):
         return Knight(self.x, self.y, self.color)
 
+    def to_string(self):
+        if self.color == "B":
+            return " \u2658 "
+        else:
+            return " \u265E "
+
 
 class Bishop(Piece):
 
@@ -171,6 +184,12 @@ class Bishop(Piece):
 
     def clone(self):
         return Bishop(self.x, self.y, self.color)
+
+    def to_string(self):
+        if self.color == "B":
+            return " \u2657 "
+        else:
+            return " \u265D "
 
 
 class Queen(Piece):
@@ -189,7 +208,13 @@ class Queen(Piece):
     def clone(self):
         return Queen(self.x, self.y, self.color)
 
+    def to_string(self):
+        if self.color == "B":
+            return " \u2655 "
+        else:
+            return " \u265B "
 
+#To do castling
 class King(Piece):
 
     PIECE_TYPE = "K"
@@ -210,12 +235,16 @@ class King(Piece):
         moves.append(self.get_move(board, self.x, self.y-1))
         moves.append(self.get_move(board, self.x+1, self.y-1))
 
-        moves.append(self.get_top_castling_move(board))
-        moves.append(self.get_bottom_castling_move(board))
+        moves.append(self.get_long_castling_move(board))
+        moves.append(self.get_short_castling_move(board))
 
         return self.remove_null_from_list(moves)
 
-    def get_top_castling_move(self, board):
+    #Your king and rook have not moved!
+    #Your king is NOT in check!
+    #Your king does not pass through check!
+    #No pieces between the king and rook!
+    def get_short_castling_move(self, board):
         if (self.color == Piece.WHITE and board.white_king_moved):
             return 0
         if (self.color == Piece.BLACK and board.black_king_moved):
@@ -229,7 +258,7 @@ class King(Piece):
 
         return 0
 
-    def get_bottom_castling_move(self, board):
+    def get_long_castling_move(self, board):
         if (self.color == Piece.WHITE and board.white_king_moved):
             return 0
         if (self.color == Piece.BLACK and board.black_king_moved):
@@ -247,7 +276,14 @@ class King(Piece):
     def clone(self):
         return King(self.x, self.y, self.color)
 
+    def to_string(self):
+        if self.color == "B":
+            return " \u2654 "
+        else:
+            return " \u265A "
 
+#Does enpass work?
+#Does promotion works?
 class Pawn(Piece):
 
     PIECE_TYPE = "P"
@@ -291,3 +327,10 @@ class Pawn(Piece):
 
     def clone(self):
         return Pawn(self.x, self.y, self.color)
+
+    def to_string(self):
+        if self.color == "B":
+            return " \u2659 "
+        else:
+            return " \u265F "
+

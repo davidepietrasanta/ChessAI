@@ -79,7 +79,8 @@ while True:
     board.perform_move(move)
 
     print("User move: " + move.to_string())
-    print(board.to_string())
+    print(board.to_string()) 
+    # board.show()
 
     ai_move = ai.AI.get_ai_move(board, [])
     if (ai_move == 0):
