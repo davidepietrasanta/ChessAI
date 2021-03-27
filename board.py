@@ -67,6 +67,7 @@ class Board:
 
     def perform_move(self, move):
         piece = self.chesspieces[move.xfrom][move.yfrom]
+        piece.moved = True
         piece.x = move.xto
         piece.y = move.yto
         self.chesspieces[move.xto][move.yto] = piece
@@ -77,16 +78,23 @@ class Board:
                 self.chesspieces[piece.x][piece.y] = pieces.Queen(piece.x, piece.y, piece.color)
 
         if (move.castling_move):
-            if (move.xto < move.xfrom):
-                rook = self.chesspieces[move.xfrom][0]
-                rook.x = 2
-                self.chesspieces[2][0] = rook
-                self.chesspieces[0][0] = 0
-            if (move.xto > move.xfrom):
-                rook = self.chesspieces[move.xfrom][Board.HEIGHT-1]
-                rook.x = Board.WIDTH-4
-                self.chesspieces[Board.WIDTH-4][Board.HEIGHT-1] = rook
-                self.chesspieces[move.xfrom][Board.HEIGHT-1] = 0
+            #Short Castling
+            if (move.xfrom < move.xto):
+                if move.yto > 0:
+                    rook = pieces.Rook(move.xfrom+1, move.yfrom, pieces.Piece.WHITE)
+                else:
+                    rook = pieces.Rook(move.xfrom+1, move.yfrom, pieces.Piece.BLACK)
+                self.chesspieces[move.xfrom+1][move.yfrom] = rook
+                self.chesspieces[move.xto+1][move.yto] = 0
+            
+            #Long Castling
+            if (move.xfrom > move.xto):
+                if move.yto > 0:
+                    rook = pieces.Rook(move.xfrom-1, move.yfrom, pieces.Piece.WHITE)
+                else:
+                    rook = pieces.Rook(move.xfrom-1, move.yfrom, pieces.Piece.BLACK)
+                self.chesspieces[move.xfrom-1][move.yfrom] = rook
+                self.chesspieces[move.xto-2][move.yto] = 0
 
         if (piece.piece_type == pieces.King.PIECE_TYPE):
             if (piece.color == pieces.Piece.WHITE):
@@ -116,6 +124,27 @@ class Board:
                 return True
 
         return False
+
+    # Returns if the given color is checked if the king was in [x,y] position
+    def imaginary_check(self, color, x, y):
+
+        copy = Board.clone(self)
+        piece = copy.chesspieces[x][y]
+
+        if (piece != 0 and piece.color == color and piece.piece_type == pieces.King.PIECE_TYPE):
+            return copy.is_check(color)
+        else:
+            #Delete existing King
+            for xW in range(Board.WIDTH):
+                 for yW in range(Board.HEIGHT):
+                    piece = copy.chesspieces[xW][yW]
+                    if(piece != 0 and piece.color == color and piece.piece_type == pieces.King.PIECE_TYPE):
+                        copy.chesspieces[xW][yW] = 0
+            
+            copy.chesspieces[x][y] = pieces.King(x, y, color)
+            #print("&&"+ copy.to_string() )
+            return copy.is_check(color)
+
 
     # Returns piece at given position or 0 if: No piece or out of bounds.
     def get_piece(self, x, y):

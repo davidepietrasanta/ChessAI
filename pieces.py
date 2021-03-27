@@ -5,13 +5,13 @@ class Piece():
     WHITE = "W"
     BLACK = "B"
 
-    def __init__(self, x, y, color, piece_type, value):
+    def __init__(self, x, y, color, piece_type, value, moved = False):
         self.x = x
         self.y = y
         self.color = color
         self.piece_type = piece_type
         self.value = value
-
+        self.moved = moved 
 
 
     # Returns all diagonal moves for this piece. This should therefore only
@@ -123,14 +123,14 @@ class Rook(Piece):
     PIECE_TYPE = "R"
     VALUE = 500
 
-    def __init__(self, x, y, color):
-        super(Rook, self).__init__(x, y, color, Rook.PIECE_TYPE, Rook.VALUE)
+    def __init__(self, x, y, color, moved = False):
+        super(Rook, self).__init__(x, y, color, Rook.PIECE_TYPE, Rook.VALUE, moved)
 
     def get_possible_moves(self, board):
         return self.get_possible_horizontal_moves(board)
 
     def clone(self):
-        return Rook(self.x, self.y, self.color)
+        return Rook(self.x, self.y, self.color, self.moved)
 
     def to_string(self):
         if self.color == "B":
@@ -144,8 +144,8 @@ class Knight(Piece):
     PIECE_TYPE = "N"
     VALUE = 320
 
-    def __init__(self, x, y, color):
-        super(Knight, self).__init__(x, y, color, Knight.PIECE_TYPE, Knight.VALUE)
+    def __init__(self, x, y, color, moved = False):
+        super(Knight, self).__init__(x, y, color, Knight.PIECE_TYPE, Knight.VALUE, moved)
 
     def get_possible_moves(self, board):
         moves = []
@@ -162,7 +162,7 @@ class Knight(Piece):
         return self.remove_null_from_list(moves)
 
     def clone(self):
-        return Knight(self.x, self.y, self.color)
+        return Knight(self.x, self.y, self.color, self.moved)
 
     def to_string(self):
         if self.color == "B":
@@ -176,14 +176,14 @@ class Bishop(Piece):
     PIECE_TYPE = "B"
     VALUE = 330
 
-    def __init__(self, x, y, color):
-        super(Bishop, self).__init__(x, y, color, Bishop.PIECE_TYPE, Bishop.VALUE)
+    def __init__(self, x, y, color, moved = False):
+        super(Bishop, self).__init__(x, y, color, Bishop.PIECE_TYPE, Bishop.VALUE, moved)
 
     def get_possible_moves(self, board):
         return self.get_possible_diagonal_moves(board)
 
     def clone(self):
-        return Bishop(self.x, self.y, self.color)
+        return Bishop(self.x, self.y, self.color, self.moved)
 
     def to_string(self):
         if self.color == "B":
@@ -197,8 +197,8 @@ class Queen(Piece):
     PIECE_TYPE = "Q"
     VALUE = 900
 
-    def __init__(self, x, y, color):
-        super(Queen, self).__init__(x, y, color, Queen.PIECE_TYPE, Queen.VALUE)
+    def __init__(self, x, y, color, moved = False):
+        super(Queen, self).__init__(x, y, color, Queen.PIECE_TYPE, Queen.VALUE, moved)
 
     def get_possible_moves(self, board):
         diagonal = self.get_possible_diagonal_moves(board)
@@ -206,7 +206,7 @@ class Queen(Piece):
         return horizontal + diagonal
 
     def clone(self):
-        return Queen(self.x, self.y, self.color)
+        return Queen(self.x, self.y, self.color, self.moved)
 
     def to_string(self):
         if self.color == "B":
@@ -220,8 +220,8 @@ class King(Piece):
     PIECE_TYPE = "K"
     VALUE = 20000
 
-    def __init__(self, x, y, color):
-        super(King, self).__init__(x, y, color, King.PIECE_TYPE, King.VALUE)
+    def __init__(self, x, y, color, moved = False):
+        super(King, self).__init__(x, y, color, King.PIECE_TYPE, King.VALUE, moved)
 
     def get_possible_moves(self, board):
         moves = []
@@ -240,21 +240,28 @@ class King(Piece):
 
         return self.remove_null_from_list(moves)
 
-    #Your king and rook have not moved!
-    #Your king is NOT in check!
-    #Your king does not pass through check!
-    #No pieces between the king and rook!
+    #To castling there are 4 conditions:
+    #1 No pieces between the king and rook! 
+    #2 Your king is NOT in check! 
+    #3 Your king and rook have not moved!
+    #4 Your king does not pass through check! (To do) // guardare le possibili mosse dell'avversario, se finiscono in una casella intermedia
+     
     def get_short_castling_move(self, board):
         if (self.color == Piece.WHITE and board.white_king_moved):
             return 0
         if (self.color == Piece.BLACK and board.black_king_moved):
             return 0
 
-        piece = board.get_piece(self.x, self.y-3)
+        piece = board.get_piece(self.x+3, self.y)
         if (piece != 0):
             if (piece.color == self.color and piece.piece_type == Rook.PIECE_TYPE):
-                if (board.get_piece(self.x, self.y-1) == 0 and board.get_piece(self.x, self.y-2) == 0):
-                    return ai.Move(self.x, self.y, self.x, self.y-2, True)
+                if (board.get_piece(self.x+1, self.y) == 0 and board.get_piece(self.x+2, self.y) == 0): #1st condition
+                    if( not board.is_check(self.color) ): #2nd condition
+                        if( not(self.moved) and not(piece.moved) ): #3nd condition
+                            if( board.imaginary_check(self.color, self.x+1, self.y) == False and 
+                                board.imaginary_check(self.color, self.x+2, self.y) == False ): #4th condition
+                                #print("You can performe Short castling")
+                                return ai.Move(self.x, self.y, self.x+2, self.y,True)
 
         return 0
 
@@ -264,17 +271,25 @@ class King(Piece):
         if (self.color == Piece.BLACK and board.black_king_moved):
             return 0
 
-        piece = board.get_piece(self.x, self.y+4)
+        piece = board.get_piece(self.x-4, self.y)
         if (piece != 0):
             if (piece.color == self.color and piece.piece_type == Rook.PIECE_TYPE):
-                if (board.get_piece(self.x, self.y+1) == 0 and board.get_piece(self.x, self.y+2) == 0 and board.get_piece(self.x, self.y+3) == 0):
-                    return ai.Move(self.x, self.y, self.x, self.y+2, True)
+                if (board.get_piece(self.x-1, self.y) == 0 and board.get_piece(self.x-2, self.y) == 0 and board.get_piece(self.x-3, self.y) == 0): #1st condition
+                    #The 2nd condition break the IA, if commented the IA will stop crushing
+                    #This may be due to the amount of memory
+                    #if( not board.is_check(self.color) ): #2nd condition 
+                        if( not(self.moved) and not(piece.moved) ): #3nd condition
+                            if( board.imaginary_check(self.color, self.x-1, self.y) == False and 
+                                board.imaginary_check(self.color, self.x-2, self.y) == False and
+                                board.imaginary_check(self.color, self.x-3, self.y) == False ): #4th condition
+                                #print("You can performe Long castling")
+                                return ai.Move(self.x, self.y, self.x-2, self.y,True)
 
         return 0
 
 
     def clone(self):
-        return King(self.x, self.y, self.color)
+        return King(self.x, self.y, self.color, self.moved)
 
     def to_string(self):
         if self.color == "B":
@@ -289,8 +304,8 @@ class Pawn(Piece):
     PIECE_TYPE = "P"
     VALUE = 100
 
-    def __init__(self, x, y, color):
-        super(Pawn, self).__init__(x, y, color, Pawn.PIECE_TYPE, Pawn.VALUE)
+    def __init__(self, x, y, color, moved = False):
+        super(Pawn, self).__init__(x, y, color, Pawn.PIECE_TYPE, Pawn.VALUE, moved)
 
     def is_starting_position(self):
         if (self.color == Piece.BLACK):
@@ -326,7 +341,7 @@ class Pawn(Piece):
         return self.remove_null_from_list(moves)
 
     def clone(self):
-        return Pawn(self.x, self.y, self.color)
+        return Pawn(self.x, self.y, self.color, self.moved)
 
     def to_string(self):
         if self.color == "B":

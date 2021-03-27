@@ -1,12 +1,23 @@
 import board, pieces, ai
 
 # Returns a move object based on the users input. Does not check if the move is valid.
-def get_user_move():
+def get_user_move(color = "B"):
     print("Example Move: A2 A4")
     move_str = input("Your Move: ")
     move_str = move_str.replace(" ", "")
 
     try:
+        if move_str == "o-o":
+            if color == "B":
+                return ai.Move(4, 0, 4+2, 0,True)
+            else:
+                return ai.Move(4, board.HEIGHT-1, 4+2, board.HEIGHT-1,True)
+        if move_str == "O-O" or move_str == "o-o-o":
+            if color == "B":
+                return ai.Move(4, 0, 4-2, 0,True)
+            else:
+                return ai.Move(4, board.HEIGHT-1, 4-2, board.HEIGHT-1,True)
+
         xfrom = letter_to_xpos(move_str[0:1])
         yfrom = 8 - int(move_str[1:2]) # The board is drawn "upside down", so flip the y coordinate.
         xto = letter_to_xpos(move_str[2:3])
@@ -14,12 +25,12 @@ def get_user_move():
         return ai.Move(xfrom, yfrom, xto, yto, False)
     except ValueError:
         print("Invalid format. Example: A2 A4")
-        return get_user_move()
+        return get_user_move(color)
 
 # Returns a valid move based on the users input.
 def get_valid_user_move(board):
     while True:
-        move = get_user_move()
+        move = get_user_move(color = "W")
         valid = False
         possible_moves = board.get_possible_moves(pieces.Piece.WHITE)
         # No possible moves
@@ -28,13 +39,13 @@ def get_valid_user_move(board):
 
         for possible_move in possible_moves:
             if (move.equals(possible_move)):
-                move.castling_move = possible_move.castling_move
                 valid = True
                 break
 
-        if (valid):
+        if valid:
             break
         else:
+            print(move.to_string() )
             print("Invalid move.")
     return move
 
