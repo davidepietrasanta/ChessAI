@@ -244,7 +244,7 @@ class King(Piece):
     #1 No pieces between the king and rook! 
     #2 Your king is NOT in check! 
     #3 Your king and rook have not moved!
-    #4 Your king does not pass through check! (To do) // guardare le possibili mosse dell'avversario, se finiscono in una casella intermedia
+    #4 Your king does not pass through check! 
      
     def get_short_castling_move(self, board):
         if (self.color == Piece.WHITE and board.white_king_moved):

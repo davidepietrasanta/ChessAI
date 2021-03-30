@@ -1,19 +1,19 @@
 import board, pieces, ai
 
 # Returns a move object based on the users input. Does not check if the move is valid.
-def get_user_move(color = "B"):
+def get_user_move(color = pieces.Piece.BLACK):
     print("Example Move: A2 A4")
     move_str = input("Your Move: ")
     move_str = move_str.replace(" ", "")
 
     try:
         if move_str == "o-o":
-            if color == "B":
+            if color == pieces.Piece.WHITE:
                 return ai.Move(4, 0, 4+2, 0,True)
             else:
                 return ai.Move(4, board.HEIGHT-1, 4+2, board.HEIGHT-1,True)
         if move_str == "O-O" or move_str == "o-o-o":
-            if color == "B":
+            if color == pieces.Piece.WHITE:
                 return ai.Move(4, 0, 4-2, 0,True)
             else:
                 return ai.Move(4, board.HEIGHT-1, 4-2, board.HEIGHT-1,True)
@@ -28,11 +28,11 @@ def get_user_move(color = "B"):
         return get_user_move(color)
 
 # Returns a valid move based on the users input.
-def get_valid_user_move(board):
+def get_valid_user_move(board, color = pieces.Piece.WHITE):
     while True:
-        move = get_user_move(color = "W")
+        move = get_user_move(color)
         valid = False
-        possible_moves = board.get_possible_moves(pieces.Piece.WHITE)
+        possible_moves = board.get_possible_moves(color)
         # No possible moves
         if (not possible_moves):
             return 0
@@ -71,37 +71,94 @@ def letter_to_xpos(letter):
 
     raise ValueError("Invalid letter.")
 
+
+def real_vs_ai():
+    board_t = board.Board.new()
+    print(board_t.to_string())
+
+    while True:
+        move = get_valid_user_move(board_t, pieces.Piece.WHITE)
+        if (move == 0):
+            if (board_t.is_check(pieces.Piece.WHITE)):
+                print("Checkmate. Black Wins.")
+                break
+            else:
+                print("Stalemate.")
+                break
+
+        board_t.perform_move(move)
+
+        print("User move: " + move.to_string())
+        print(board_t.to_string()) 
+        # board_t.show()
+
+        ai_move = ai.AI.get_ai_move(board_t, [])
+        if (ai_move == 0):
+            if (board_t.is_check(pieces.Piece.BLACK)):
+                print("Checkmate. White wins.")
+                break
+            else:
+                print("Stalemate.")
+                break
+
+        board_t.perform_move(ai_move)
+        print("AI move: " + ai_move.to_string())
+        print(board_t.to_string())
+
+
+def real_vs_real():
+    board_t = board.Board.new()
+    print(board_t.to_string())
+
+    while True:
+        w_move = get_valid_user_move(board_t, pieces.Piece.WHITE)
+        if (w_move == 0):
+            if (board_t.is_check(pieces.Piece.WHITE)):
+                print("Checkmate. Black Wins.")
+                break
+            else:
+                print("Stalemate.")
+                break
+
+        board_t.perform_move(w_move)
+
+        print("White user move: " + w_move.to_string())
+        print(board_t.to_string()) 
+        # board_t.show()
+
+        b_move = get_valid_user_move(board_t, pieces.Piece.BLACK)
+        if (b_move == 0):
+            if (board_t.is_check(pieces.Piece.BLACK)):
+                print("Checkmate. Black Wins.")
+                break
+            else:
+                print("Stalemate.")
+                break
+
+        board_t.perform_move(b_move)
+
+        print("Black user move: " + b_move.to_string())
+        print(board_t.to_string())
+
+
+def menu():
+    print("Do you want to play against the AI or with your friend?")
+    print("1 - AI")
+    print("2 - Friend")
+    val = input("Enter your value: ")
+
+    if val == '1':
+        real_vs_ai(),
+    if val == '2':
+        real_vs_real()
+    else:
+        print("Invalid Input")
+
+
+
+
 #
 # Entry point.
 #
-board = board.Board.new()
-print(board.to_string())
+menu()
 
-while True:
-    move = get_valid_user_move(board)
-    if (move == 0):
-        if (board.is_check(pieces.Piece.WHITE)):
-            print("Checkmate. Black Wins.")
-            break
-        else:
-            print("Stalemate.")
-            break
-
-    board.perform_move(move)
-
-    print("User move: " + move.to_string())
-    print(board.to_string()) 
-    # board.show()
-
-    ai_move = ai.AI.get_ai_move(board, [])
-    if (ai_move == 0):
-        if (board.is_check(pieces.Piece.BLACK)):
-            print("Checkmate. White wins.")
-            break
-        else:
-            print("Stalemate.")
-            break
-
-    board.perform_move(ai_move)
-    print("AI move: " + ai_move.to_string())
-    print(board.to_string())
